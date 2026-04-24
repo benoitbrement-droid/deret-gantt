@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V12</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V14</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -21,7 +21,7 @@
   --font:      'Barlow', sans-serif;
   --font-cond: 'Barlow Condensed', sans-serif;
   --row-h:     48px;
-  --label-w:   320px;
+  --label-w:   420px;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -135,7 +135,7 @@ header {
 /* ── GANTT TABLE ── */
 .gantt-table {
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
   min-width: 100%;
   font-size: 12px;
 }
@@ -779,22 +779,24 @@ function render(){
 
       // Calculate bar position
       let barStartCol=-1, barSpan=0;
-      if(d1&&d2){
+      if(d1){
+        const d1t = startOfDay(d1);
+        const d2t = d2 ? startOfDay(d2) : d1t;
         cols.forEach((c,i)=>{
-          const cs=startOfDay(c.date);
-          const ce=zoom==='week'?addDays(cs,1):zoom==='month'?addDays(cs,7):new Date(cs.getFullYear(),cs.getMonth()+1,1);
-          if(d1<ce && d2>=cs){
+          const cs = startOfDay(c.date);
+          // Fin de la colonne = début de la colonne suivante
+          const ce = zoom==='week'   ? addDays(cs,1) :
+                     zoom==='month'  ? addDays(cs,7) :
+                     new Date(cs.getFullYear(), cs.getMonth()+1, 1);
+          // La barre intersecte cette colonne si début < fin_col ET fin >= début_col
+          const overlaps = d1t < ce && d2t >= cs;
+          if(overlaps){
             if(barStartCol===-1) barStartCol=i;
-            barSpan++;
+            barSpan = i - barStartCol + 1;
           }
         });
-      } else if(d1){
-        // single point milestone
-        cols.forEach((c,i)=>{
-          const cs=startOfDay(c.date);
-          const ce=zoom==='week'?addDays(cs,1):zoom==='month'?addDays(cs,7):new Date(cs.getFullYear(),cs.getMonth()+1,1);
-          if(d1>=cs&&d1<ce){ barStartCol=i; barSpan=1; }
-        });
+        // Garantir au moins 1 colonne pour les milestones (d1=d2)
+        if(barStartCol !== -1 && barSpan === 0) barSpan = 1;
       }
 
       // Render cells — bar spans across multiple tds using absolute positioning in first cell
