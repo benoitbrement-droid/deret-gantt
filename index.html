@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V10</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V11</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -21,7 +21,7 @@
   --font:      'Barlow', sans-serif;
   --font-cond: 'Barlow Condensed', sans-serif;
   --row-h:     36px;
-  --label-w:   230px;
+  --label-w:   320px;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -645,9 +645,9 @@ function startOfWeek(d){ const r=new Date(d); r.setDate(r.getDate()-r.getDay()+1
 
 /* ── COL WIDTH BY ZOOM ── */
 function colW(){
-  if(zoom==='week')    return 22;
-  if(zoom==='month')   return 8;
-  if(zoom==='quarter') return 4;
+  if(zoom==='week')    return 28;
+  if(zoom==='month')   return 14;
+  if(zoom==='quarter') return 6;
   return 8;
 }
 
