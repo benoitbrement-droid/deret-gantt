@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V20</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V21</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -799,26 +799,25 @@ function render(){
         if(barStartCol!==-1 && barSpan===0) barSpan=1;
       }
 
-      // Render cells — bar spans across multiple tds using absolute positioning in first cell
-      cols.forEach((c,i)=>{
-        const isWE = c.date.getDay()===0||c.date.getDay()===6;
-        const isToday = i===todayIdx;
-        let cls='g-day';
-        if(isWE&&zoom==='week') cls+=' weekend';
-        if(isToday) cls+=' today-col';
-
-        if(i===barStartCol&&barSpan>0){
-          const barW = Math.max(barSpan*CW - 4, 8);
-          const tooltip=`data-tt="${esc(name)}|${t['État']||''}|${fmtD(d1)} → ${fmtD(d2)}|${t['Cycle']||''}|${t['Propriétaire']||''}"`;
-          html+=`<td class="${cls}" style="position:relative">
-            <div class="bar ${sc}" style="left:2px;width:${barW}px" ${tooltip} onmouseenter="showTT(event,this)" onmouseleave="hideTT()">
-              <span class="bar-label">${barSpan*CW>30?esc(name):''}</span>
-            </div>
-          </td>`;
+      // Render cells — bar uses colspan for exact spanning
+      let ci=0;
+      while(ci<cols.length){
+        const c=cols[ci];
+        const isToday=(ci===todayIdx);
+        let cls='g-day'+(isToday?' today-col':'');
+        if(ci===barStartCol&&barSpan>0){
+          const tooltip='data-tt="'+esc(name)+'|'+(t['État']||'')+'|'+fmtD(d1)+' → '+fmtD(d2)+'|'+(t['Cycle']||'')+'|'+(t['Propriétaire']||'')+'"';
+          const showLbl=(barSpan*CW>50);
+          html+='<td class="'+cls+'" colspan="'+barSpan+'" style="position:relative;padding:0">';
+          html+='<div class="bar '+sc+'" style="position:absolute;left:2px;right:2px;top:6px;bottom:6px" '+tooltip+' onmouseenter="showTT(event,this)" onmouseleave="hideTT()">';
+          html+='<span class="bar-label">'+(showLbl?esc(name):'')+'</span>';
+          html+='</div></td>';
+          ci+=barSpan;
         } else {
-          html+=`<td class="${cls}"></td>`;
+          html+='<td class="'+cls+'"></td>';
+          ci++;
         }
-      });
+      }
 
       html+=`</tr>`;
     });
