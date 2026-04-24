@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V18</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V19</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -464,7 +464,7 @@ const SHEET_ID   = '1Lp4uzgPkwa2BdIEQMroBQZ0j75GTYasQg0Pi1ywtHGY';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtZzMRDVQEdVE_TuIIz9vut2EJ2kDr7AgzpGEo_BxfJ2MnvMMA53TV4fWcFp8vnO6grA/exec';
 const TABS = ['Software','Hardware'];
 const GIDS = [0, 198443496]; // Software=Planning DEVCON (gid=0), Hardware=Planning installation (gid=198443496)
-const REFRESH_MS = 60000;
+const REFRESH_MS = 300000; // 5 min
 const MONTHS_FR  = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const MONTHS_FULL= ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
@@ -695,9 +695,11 @@ function render(){
     if(d2&&d2<minD) minD=d2;
     if(d2&&d2>maxD) maxD=d2;
   });
-  // Pad
-  minD = addDays(startOfDay(minD), -14);
-  maxD = addDays(startOfDay(maxD),  21);
+  // Pad généreusement pour couvrir toutes les barres
+  minD = addDays(startOfDay(minD), -21);
+  maxD = addDays(startOfDay(maxD),  42);
+  // Debug
+  console.log('[Gantt] plage dates:', minD.toLocaleDateString(), '→', maxD.toLocaleDateString());
 
   const cols  = buildCols(minD, maxD);
   const CW    = colW();
