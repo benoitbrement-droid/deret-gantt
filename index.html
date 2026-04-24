@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V21</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V22</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -524,10 +524,11 @@ function parseFlat(data, gid) {
     const getDebut = r => r['Début']||r['Debut']||r['début']||'';
     const getFin   = r => r['Fin']||r['fin']||'';
     const getQty   = r => r['Quantité']||r['Quantite']||'';
+    const getEtat  = r => r['État']||r['Etat']||r['état']||r['etat']||'';
     const getJours = r => r['Jours']||r['jours']||'';
     return rows.filter(r => getName(r) && getName(r) !== 'Tache').map(r => ({
       'Tâche': getName(r), 'Lotissement': getBatch(r)?'Batch '+getBatch(r):'Hardware',
-      'État':'','Priorité':'','Versions':'','Cycle':'','Propriétaire':'',
+      'État': getEtat(r), 'Priorité':'','Versions':'','Cycle':'','Propriétaire':'',
       'Date de début': getDebut(r), 'Date de fin': getFin(r),
       'Notes': (getQty(r)?'Qté: '+getQty(r):'')+(getJours(r)?' · '+getJours(r)+' j':'')
     }));
