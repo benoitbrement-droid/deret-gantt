@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V16</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V17</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -135,7 +135,7 @@ header {
 /* ── GANTT TABLE ── */
 .gantt-table {
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
   min-width: 100%;
   font-size: 12px;
 }
@@ -726,6 +726,10 @@ function render(){
   });
 
   let html=`<table class="gantt-table" id="gantt-tbl">`;
+  // Colgroup pour forcer les largeurs
+  html += `<colgroup><col style="width:${parseInt(getComputedStyle(document.documentElement).getPropertyValue('--label-w')||'420')}px">`;
+  cols.forEach(() => { html += `<col style="width:${CW}px;min-width:${CW}px;max-width:${CW}px">`; });
+  html += `</colgroup>`;
 
   // ROW 1: months
   html+=`<thead><tr class="thead-months"><th class="g-label">Tâche</th>`;
