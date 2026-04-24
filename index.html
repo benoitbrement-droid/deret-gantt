@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V9</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V10</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -406,8 +406,8 @@ footer b { color:var(--lagoon); }
 
 <!-- TABS -->
 <div class="tabs-bar">
-  <button class="tab-btn active" onclick="switchTab(0,this)">Hardware</button>
-  <button class="tab-btn" onclick="switchTab(1,this)">Software</button>
+  <button class="tab-btn active" onclick="switchTab(0,this)">Software</button>
+  <button class="tab-btn" onclick="switchTab(1,this)">Hardware</button>
 </div>
 
 <!-- TOOLBAR -->
@@ -464,8 +464,8 @@ footer b { color:var(--lagoon); }
 const SHEET_ID   = '1Lp4uzgPkwa2BdIEQMroBQZ0j75GTYasQg0Pi1ywtHGY';
 // ⚠️ Remplace cette URL par celle de ton Apps Script déployé
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtZzMRDVQEdVE_TuIIz9vut2EJ2kDr7AgzpGEo_BxfJ2MnvMMA53TV4fWcFp8vnO6grA/exec';
-const TABS = ['Hardware','Software'];
-const GIDS = [1953740944, 643382955]; // GID forcé par onglet
+const TABS = ['Software','Hardware'];
+const GIDS = [0, 198443496]; // Software=Planning DEVCON (gid=0), Hardware=Planning installation (gid=198443496)
 const REFRESH_MS = 60000;
 const MONTHS_FR  = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const MONTHS_FULL= ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
@@ -500,7 +500,9 @@ function fetchSheet(name, gid) {
       resolve(parseFlat(json, gid));
     };
 
-    script.src = APPS_SCRIPT_URL + '?sheet=' + encodeURIComponent(name) + '&callback=' + cbName;
+    const sheetMap = {'Software':'Planning DEVCON','Hardware':'Planning installation'};
+    const realName = sheetMap[name] || name;
+    script.src = APPS_SCRIPT_URL + '?sheet=' + encodeURIComponent(realName) + '&callback=' + cbName;
     script.onerror = () => {
       clearTimeout(timeout);
       delete window[cbName];
@@ -517,7 +519,7 @@ function parseFlat(data, gid) {
     headers.forEach((h, i) => { obj[h] = (row[i] !== null && row[i] !== undefined) ? String(row[i]) : ''; });
     return obj;
   });
-  const isHardware = (gid === 1953740944);
+  const isHardware = (gid === 198443496);
   if(isHardware) {
     const getName = r => r['Tache']||r['tache']||'';
     const getBatch = r => r['Batch']||r['batch']||'';
@@ -564,7 +566,7 @@ function parseGviz(json, gid) {
     });
 
   // Détection par GID — Hardware=1953740944, Software=643382955
-  const isHardware = (gid === 1953740944);
+  const isHardware = (gid === 198443496);
   console.log('[Balea] GID='+gid+' isHardware='+isHardware+' headers='+JSON.stringify(headers));
 
   if(isHardware) {
