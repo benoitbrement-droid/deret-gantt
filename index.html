@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V7</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V8</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -477,28 +477,37 @@ let zoom     = 'month'; // 'week' | 'month' | 'quarter'
 let timer    = null;
 
 /* ── FETCH ── */
-async function fetchSheet(name, gid) {
-  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'APPS_SCRIPT_URL_ICI') {
-    throw new Error('Configure APPS_SCRIPT_URL dans le code (voir instructions)');
-  }
-  const url = APPS_SCRIPT_URL + '?sheet=' + encodeURIComponent(name);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const json = await r.json();
-  if(json.error) throw new Error(json.error);
-  // json = { headers: [...], rows: [[...], ...] }
-  return parseFlat(json, gid);
-}
+function fetchSheet(name, gid) {
+  // JSONP — contourne CORS depuis GitHub Pages / Netlify
+  return new Promise((resolve, reject) => {
+    if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'APPS_SCRIPT_URL_ICI') {
+      reject(new Error('Configure APPS_SCRIPT_URL dans le code'));
+      return;
+    }
+    const cbName = 'cb_' + name.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      document.head.removeChild(script);
+      reject(new Error('Timeout fetch ' + name));
+    }, 10000);
 
-async function fetchSheetFallback(name, gid) {
-  // Fallback gviz (fonctionne parfois selon la config du Sheet)
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}&headers=1`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const text = await r.text();
-  if(text.trim().startsWith('<')) throw new Error('Sheet privé');
-  const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
-  return parseGviz(json, gid);
+    window[cbName] = function(json) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      document.head.removeChild(script);
+      if(json.error) { reject(new Error(json.error)); return; }
+      resolve(parseFlat(json, gid));
+    };
+
+    script.src = APPS_SCRIPT_URL + '?sheet=' + encodeURIComponent(name) + '&callback=' + cbName;
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      reject(new Error('Script load error for ' + name));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 function parseFlat(data, gid) {
