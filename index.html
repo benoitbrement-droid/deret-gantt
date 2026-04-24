@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V22</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V23</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -268,11 +268,6 @@ td.g-day {
 }
 td.g-day.weekend { background: #f7f8fa; }
 td.g-day.today-col { background: #fffbf0; }
-td.g-day.today-col::after {
-  content:'';
-  position:absolute; top:0; left:50%; bottom:0;
-  width:2px; background:var(--sunset); opacity:.5; transform:translateX(-50%);
-}
 
 /* BAR */
 .bar {
@@ -829,9 +824,29 @@ function render(){
 
   // Scroll to today
   if(todayIdx>0){
-    const labelW=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--label-w'))||230;
+    const labelW=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--label-w'))||420;
     wrap.scrollLeft = Math.max(0, todayIdx*CW - wrap.clientWidth/2 + labelW);
   }
+
+  // Today line overlay — positioned via JS to work with colspan rows
+  requestAnimationFrame(()=>{
+    const tbl = document.getElementById('gantt-tbl');
+    if(!tbl || todayIdx<0) return;
+    const ths = tbl.querySelectorAll('tr.thead-weeks th');
+    const todayTh = ths[todayIdx+1]; // +1 for label col
+    if(!todayTh) return;
+    const tblRect = tbl.getBoundingClientRect();
+    const thRect  = todayTh.getBoundingClientRect();
+    const x = thRect.left + thRect.width/2 - tblRect.left + wrap.scrollLeft;
+    let line = document.getElementById('today-line');
+    if(!line){
+      line = document.createElement('div');
+      line.id = 'today-line';
+      wrap.style.position = 'relative';
+      wrap.appendChild(line);
+    }
+    line.style.cssText = 'position:absolute;top:0;bottom:0;left:'+x+'px;width:2px;background:var(--sunset);opacity:.7;pointer-events:none;z-index:20;';
+  });
 }
 
 function showError(msg){
