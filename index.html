@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gantt — e-Pickeur Mixte | Balea — V17</title>
+<title>Gantt — e-Pickeur Mixte | Balea — V18</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -780,25 +780,22 @@ function render(){
         </td>`;
 
       // Calculate bar position
-      let barStartCol=-1, barSpan=0;
+      let barStartCol=-1, barEndCol=-1;
       if(d1){
         const d1t = startOfDay(d1);
         const d2t = d2 ? startOfDay(d2) : d1t;
-        cols.forEach((c,i)=>{
-          const cs = startOfDay(c.date);
-          // Fin de la colonne = début de la colonne suivante
+        for(let ci=0; ci<cols.length; ci++){
+          const cs = startOfDay(cols[ci].date);
           const ce = zoom==='week'   ? addDays(cs,1) :
                      zoom==='month'  ? addDays(cs,7) :
                      new Date(cs.getFullYear(), cs.getMonth()+1, 1);
-          // La barre intersecte cette colonne si début < fin_col ET fin >= début_col
-          const overlaps = d1t < ce && d2t >= cs;
-          if(overlaps){
-            if(barStartCol===-1) barStartCol=i;
-            barSpan = i - barStartCol + 1;
+          if(d1t < ce && d2t >= cs){
+            if(barStartCol===-1) barStartCol=ci;
+            barEndCol=ci;
           }
-        });
-        // Garantir au moins 1 colonne pour les milestones (d1=d2)
-        if(barStartCol !== -1 && barSpan === 0) barSpan = 1;
+        }
+        barSpan = (barStartCol!==-1) ? (barEndCol - barStartCol + 1) : 0;
+        if(barStartCol!==-1 && barSpan===0) barSpan=1;
       }
 
       // Render cells — bar spans across multiple tds using absolute positioning in first cell
